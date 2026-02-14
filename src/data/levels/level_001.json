@@ -1,0 +1,15 @@
+{
+  "id": "level_001",
+  "name": "First Step",
+  "difficulty": 1,
+  "size": { "width": 6, "height": 3 },
+  "start": { "x": 1, "z": 1, "orientation": "standing" },
+  "goal": { "x": 4, "z": 1 },
+  "tiles": [
+    [0, 0, 0, 0, 0, 0],
+    [0, 1, 1, 1, 9, 0],
+    [0, 0, 0, 0, 0, 0]
+  ],
+  "solution": ["right", "right"],
+  "minMoves": 2
+}

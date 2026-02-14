@@ -1,0 +1,17 @@
+{
+  "id": "level_024",
+  "name": "Island Hop",
+  "difficulty": 6,
+  "size": { "width": 14, "height": 5 },
+  "start": { "x": 1, "z": 2, "orientation": "standing" },
+  "goal": { "x": 10, "z": 2 },
+  "tiles": [
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0],
+    [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 0, 0, 0],
+    [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+  ],
+  "solution": ["right", "right", "right", "right", "right"],
+  "minMoves": 5
+}
