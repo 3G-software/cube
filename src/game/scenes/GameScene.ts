@@ -286,14 +286,37 @@ export class GameScene {
   private centerCamera(): void {
     if (!this.camera || !this.level) return;
 
-    const size = this.level.getSize();
-    const centerX = (size.width - 1) / 2;
-    const centerZ = (size.height - 1) / 2;
+    // Calculate actual bounds of tiles (not just declared size)
+    const tiles = this.level.getTiles();
+    let minX = Infinity, maxX = -Infinity;
+    let minZ = Infinity, maxZ = -Infinity;
+
+    tiles.forEach((tile) => {
+      const pos = tile.getPosition();
+      minX = Math.min(minX, pos.x);
+      maxX = Math.max(maxX, pos.x);
+      minZ = Math.min(minZ, pos.z);
+      maxZ = Math.max(maxZ, pos.z);
+    });
+
+    // Fallback to declared size if no tiles
+    if (minX === Infinity) {
+      const size = this.level.getSize();
+      minX = 0;
+      maxX = size.width - 1;
+      minZ = 0;
+      maxZ = size.height - 1;
+    }
+
+    const centerX = (minX + maxX) / 2;
+    const centerZ = (minZ + maxZ) / 2;
 
     this.camera.target = new Vector3(centerX, 0, centerZ);
 
-    // Adjust camera distance based on level size
-    const maxDimension = Math.max(size.width, size.height);
+    // Adjust camera distance based on actual tile area
+    const actualWidth = maxX - minX + 1;
+    const actualHeight = maxZ - minZ + 1;
+    const maxDimension = Math.max(actualWidth, actualHeight);
     const dynamicDistance = Math.max(CAMERA_DISTANCE, maxDimension * 2.5);
     this.camera.radius = dynamicDistance;
     this.camera.lowerRadiusLimit = dynamicDistance;
