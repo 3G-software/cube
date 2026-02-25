@@ -1,15 +1,17 @@
-import { Scene } from '@babylonjs/core';
+import { Scene, MeshBuilder, DynamicTexture, StandardMaterial, Mesh, Vector3 } from '@babylonjs/core';
 import { LevelData, TileType, Position, CubeOrientation } from '../../utils/Types';
 import { Tile } from '../entities/Tile';
 import { NormalTile } from '../entities/NormalTile';
 import { SandTile } from '../entities/SandTile';
 import { FragileTile } from '../entities/FragileTile';
 import { GoalTile } from '../entities/GoalTile';
+import { TILE_SIZE } from '../../utils/Constants';
 
 export class Level {
   private scene: Scene;
   private data: LevelData;
   private tiles: Map<string, Tile> = new Map();
+  private debugLabels: Mesh[] = [];
 
   constructor(scene: Scene, data: LevelData) {
     this.scene = scene;
@@ -27,11 +29,52 @@ export class Level {
 
         if (tile) {
           this.tiles.set(`${x},${z}`, tile);
+        } else {
+          // Create debug label for empty tiles
+          this.createEmptyTileLabel(x, z);
         }
       }
     }
 
     return this.tiles;
+  }
+
+  // Create debug label for empty tile positions
+  private createEmptyTileLabel(x: number, z: number): void {
+    const plane = MeshBuilder.CreatePlane(
+      `emptyLabel_${x}_${z}`,
+      { size: 0.6 },
+      this.scene
+    );
+
+    const texture = new DynamicTexture(
+      `emptyTex_${x}_${z}`,
+      { width: 128, height: 64 },
+      this.scene,
+      false
+    );
+
+    const ctx = texture.getContext() as CanvasRenderingContext2D;
+    ctx.fillStyle = 'rgba(100, 100, 100, 0.5)';
+    ctx.fillRect(0, 0, 128, 64);
+    ctx.font = 'bold 28px Arial';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`${x},${z}`, 64, 32);
+    texture.update();
+
+    const material = new StandardMaterial(`emptyMat_${x}_${z}`, this.scene);
+    material.diffuseTexture = texture;
+    material.emissiveTexture = texture;
+    material.backFaceCulling = false;
+    material.disableLighting = true;
+
+    plane.material = material;
+    plane.rotation.x = Math.PI / 2;
+    plane.position = new Vector3(x * TILE_SIZE, -0.05, z * TILE_SIZE);
+
+    this.debugLabels.push(plane);
   }
 
   // Create a tile based on code
@@ -95,5 +138,16 @@ export class Level {
   public dispose(): void {
     this.tiles.forEach(tile => tile.dispose());
     this.tiles.clear();
+
+    // Dispose debug labels
+    this.debugLabels.forEach(label => {
+      if (label.material) {
+        const mat = label.material as StandardMaterial;
+        if (mat.diffuseTexture) mat.diffuseTexture.dispose();
+        mat.dispose();
+      }
+      label.dispose();
+    });
+    this.debugLabels = [];
   }
 }

@@ -33,7 +33,7 @@ export abstract class Tile {
     // Create a plane to display coordinates
     const plane = MeshBuilder.CreatePlane(
       `coordLabel_${this._x}_${this._z}`,
-      { size: 0.4 },
+      { size: 0.7 },
       this.scene
     );
 
@@ -48,8 +48,8 @@ export abstract class Tile {
     const ctx = texture.getContext() as CanvasRenderingContext2D;
     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
     ctx.fillRect(0, 0, 128, 64);
-    ctx.font = 'bold 24px Arial';
-    ctx.fillStyle = 'white';
+    ctx.font = 'bold 36px Arial';
+    ctx.fillStyle = 'yellow';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(`${this._x},${this._z}`, 64, 32);
