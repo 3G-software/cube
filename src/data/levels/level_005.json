@@ -1,17 +1,21 @@
 {
   "id": "level_005",
-  "name": "Sand Trap",
-  "difficulty": 3,
-  "size": { "width": 7, "height": 5 },
-  "start": { "x": 1, "z": 2, "orientation": "standing" },
-  "goal": { "x": 5, "z": 2 },
+  "name": "Sand Deception",
+  "difficulty": 10,
+  "size": { "width": 13, "height": 9 },
+  "start": { "x": 1, "z": 4, "orientation": "standing" },
+  "goal": { "x": 11, "z": 4 },
   "tiles": [
-    [0, 0, 0, 0, 0, 0, 0],
-    [0, 1, 1, 2, 1, 1, 0],
-    [0, 1, 0, 0, 0, 9, 0],
-    [0, 1, 1, 1, 1, 1, 0],
-    [0, 0, 0, 0, 0, 0, 0]
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 1, 1, 1, 1, 2, 1, 1, 2, 1, 1, 1, 0],
+    [0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0],
+    [0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0],
+    [0, 1, 0, 1, 0, 0, 2, 0, 0, 1, 0, 9, 0],
+    [0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0],
+    [0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0],
+    [0, 1, 1, 1, 1, 2, 1, 1, 2, 1, 1, 1, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
   ],
-  "solution": ["down", "right", "right", "up"],
-  "minMoves": 4
+  "solution": ["up", "up", "up", "right", "right", "down", "down", "right", "right", "up", "up", "right", "right", "down", "down", "down"],
+  "minMoves": 16
 }
