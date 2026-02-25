@@ -20,6 +20,9 @@ export class SandTile extends Tile {
   }
 
   protected createMesh(): Mesh {
+    // Initialize grains array here since createMesh is called from super() before field initialization
+    this.grains = [];
+
     const tile = MeshBuilder.CreateBox(`sandTile_${this._x}_${this._z}`, {
       width: TILE_SIZE * 0.95,
       height: 0.15,
