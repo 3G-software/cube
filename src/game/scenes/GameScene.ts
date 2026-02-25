@@ -74,6 +74,10 @@ export class GameScene {
       this.scene
     );
 
+    // Set near/far clipping planes to ensure all tiles are visible
+    this.camera.minZ = 0.1;
+    this.camera.maxZ = 200;
+
     // Lock camera - no user interaction
     this.camera.lowerRadiusLimit = CAMERA_DISTANCE;
     this.camera.upperRadiusLimit = CAMERA_DISTANCE;
