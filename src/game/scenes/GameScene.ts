@@ -370,12 +370,8 @@ export class GameScene {
 
     const lastMove = this.moveHistory.pop()!;
 
-    // Restore cube state
+    // Restore cube state only - broken tiles stay broken
     this.cube.reset(lastMove.previousState);
-
-    // Restore broken tiles
-    // Note: This is simplified - a full implementation would need to track tile states
-    this.level.reset();
 
     this.moveCount = Math.max(0, this.moveCount - 1);
     this.updateUI();
