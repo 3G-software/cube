@@ -40,7 +40,8 @@ export class SandTile extends Tile {
     tile.receiveShadows = true;
 
     // Add some particle-like dots on top to simulate sand grains
-    this.addSandGrains();
+    // Pass tile as parent since this.mesh is not yet assigned
+    this.addSandGrains(tile);
 
     return tile;
   }
@@ -96,7 +97,7 @@ export class SandTile extends Tile {
     return texture;
   }
 
-  private addSandGrains(): void {
+  private addSandGrains(parentMesh: Mesh): void {
     // Add small spheres on top to simulate sand grains
     const grainCount = 15;
     for (let i = 0; i < grainCount; i++) {
@@ -122,7 +123,7 @@ export class SandTile extends Tile {
       grainMat.specularColor = new Color3(0, 0, 0);
       grain.material = grainMat;
 
-      grain.parent = this.mesh;
+      grain.parent = parentMesh;
       this.grains.push(grain);
     }
   }
