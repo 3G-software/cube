@@ -202,6 +202,22 @@ export class GameScene {
     });
     buttonContainer.appendChild(menuBtn);
 
+    // Zoom in button (debug)
+    const zoomInBtn = document.createElement('button');
+    zoomInBtn.innerHTML = '+';
+    zoomInBtn.title = 'Zoom In';
+    zoomInBtn.style.cssText = buttonStyle;
+    zoomInBtn.addEventListener('click', () => this.adjustCameraDistance(-2));
+    buttonContainer.appendChild(zoomInBtn);
+
+    // Zoom out button (debug)
+    const zoomOutBtn = document.createElement('button');
+    zoomOutBtn.innerHTML = '-';
+    zoomOutBtn.title = 'Zoom Out';
+    zoomOutBtn.style.cssText = buttonStyle;
+    zoomOutBtn.addEventListener('click', () => this.adjustCameraDistance(2));
+    buttonContainer.appendChild(zoomOutBtn);
+
     overlay.appendChild(buttonContainer);
   }
 
@@ -323,8 +339,15 @@ export class GameScene {
     const maxDimension = Math.max(actualWidth, actualHeight);
     const dynamicDistance = Math.max(CAMERA_DISTANCE, maxDimension * 2.5);
     this.camera.radius = dynamicDistance;
-    this.camera.lowerRadiusLimit = dynamicDistance;
-    this.camera.upperRadiusLimit = dynamicDistance;
+    this.camera.lowerRadiusLimit = 5;  // Allow zoom in for debug
+    this.camera.upperRadiusLimit = 100; // Allow zoom out for debug
+  }
+
+  private adjustCameraDistance(delta: number): void {
+    if (!this.camera) return;
+    const newRadius = Math.max(5, Math.min(100, this.camera.radius + delta));
+    this.camera.radius = newRadius;
+    console.log(`Camera distance: ${newRadius.toFixed(1)}`);
   }
 
   private updateUI(): void {
