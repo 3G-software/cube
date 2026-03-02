@@ -4,6 +4,7 @@ import { LevelSelectScene } from './scenes/LevelSelectScene';
 import { GameScene } from './scenes/GameScene';
 import { LevelManager } from './level/LevelManager';
 import { InputManager } from './controls/InputManager';
+import { AdManager } from './ads/AdManager';
 import { SceneType } from '../utils/Types';
 
 export class Game {
@@ -16,19 +17,29 @@ export class Game {
 
   private levelManager: LevelManager;
   private inputManager: InputManager;
+  private adManager: AdManager;
 
   private currentScene: SceneType = SceneType.MENU;
   private activeScene: Scene | null = null;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
+
+    // Set canvas size to match display size with device pixel ratio
+    this.resizeCanvas();
+
     this.engine = new Engine(canvas, true, {
       preserveDrawingBuffer: true,
       stencil: true,
+      antialias: true, // Enable antialiasing for smoother edges
     });
+
+    // Enable high DPI support for sharper graphics on mobile devices
+    this.engine.setHardwareScalingLevel(1 / window.devicePixelRatio);
 
     this.levelManager = new LevelManager();
     this.inputManager = new InputManager(canvas);
+    this.adManager = new AdManager();
 
     this.initialize();
   }
@@ -42,6 +53,7 @@ export class Game {
 
     // Setup window resize handler
     window.addEventListener('resize', () => {
+      this.resizeCanvas();
       this.engine.resize();
     });
 
@@ -54,6 +66,16 @@ export class Game {
         this.activeScene.render();
       }
     });
+  }
+
+  private resizeCanvas(): void {
+    const displayWidth = this.canvas.clientWidth;
+    const displayHeight = this.canvas.clientHeight;
+    const dpr = window.devicePixelRatio || 1;
+
+    // Set canvas internal size to match display size * device pixel ratio
+    this.canvas.width = displayWidth * dpr;
+    this.canvas.height = displayHeight * dpr;
   }
 
   private createScenes(): void {
@@ -79,10 +101,28 @@ export class Game {
     // Game scene
     this.gameScene = new GameScene(this.engine, this.levelManager, this.inputManager);
     this.gameScene.onWin(() => {
+      const currentLevel = this.levelManager.getCurrentLevel();
+      if (currentLevel) {
+        this.adManager.resetRetryCount(currentLevel.id);
+      }
       this.showWinDialog();
     });
     this.gameScene.onLose(() => {
-      this.showLoseDialog();
+      const currentLevel = this.levelManager.getCurrentLevel();
+      if (currentLevel) {
+        this.adManager.recordRetry(currentLevel.id);
+
+        // Check if we should show an ad
+        if (this.adManager.shouldShowAd(currentLevel.id)) {
+          this.adManager.showAd(() => {
+            this.showLoseDialog();
+          });
+        } else {
+          this.showLoseDialog();
+        }
+      } else {
+        this.showLoseDialog();
+      }
     });
     this.gameScene.onMenu(() => {
       this.switchToScene(SceneType.MENU);
@@ -140,10 +180,13 @@ export class Game {
       text-align: center;
       border: 2px solid #2ecc71;
       box-shadow: 0 0 30px rgba(46, 204, 113, 0.5);
+      max-width: 90%;
+      width: 400px;
+      box-sizing: border-box;
     `;
 
     const title = document.createElement('h2');
-    title.textContent = 'Level Complete!';
+    title.textContent = '关卡完成！';
     title.style.cssText = `
       color: #2ecc71;
       font-family: Arial, sans-serif;
@@ -155,12 +198,14 @@ export class Game {
     const buttonContainer = document.createElement('div');
     buttonContainer.style.cssText = `
       display: flex;
+      flex-direction: column;
       gap: 15px;
       justify-content: center;
+      width: 100%;
     `;
 
     // Next level button
-    const nextBtn = this.createDialogButton('Next Level', '#2ecc71', () => {
+    const nextBtn = this.createDialogButton('下一关', '#2ecc71', () => {
       dialog.remove();
       if (this.levelManager.goToNextLevel()) {
         this.gameScene?.loadLevel();
@@ -172,7 +217,7 @@ export class Game {
     buttonContainer.appendChild(nextBtn);
 
     // Menu button
-    const menuBtn = this.createDialogButton('Menu', '#666', () => {
+    const menuBtn = this.createDialogButton('菜单', '#666', () => {
       dialog.remove();
       this.switchToScene(SceneType.MENU);
     });
@@ -200,10 +245,13 @@ export class Game {
       text-align: center;
       border: 2px solid #e74c3c;
       box-shadow: 0 0 30px rgba(231, 76, 60, 0.5);
+      max-width: 90%;
+      width: 400px;
+      box-sizing: border-box;
     `;
 
     const title = document.createElement('h2');
-    title.textContent = 'Fell Off!';
+    title.textContent = '掉下去了！';
     title.style.cssText = `
       color: #e74c3c;
       font-family: Arial, sans-serif;
@@ -215,12 +263,14 @@ export class Game {
     const buttonContainer = document.createElement('div');
     buttonContainer.style.cssText = `
       display: flex;
+      flex-direction: column;
       gap: 15px;
       justify-content: center;
+      width: 100%;
     `;
 
     // Retry button
-    const retryBtn = this.createDialogButton('Try Again', '#e74c3c', () => {
+    const retryBtn = this.createDialogButton('重试', '#e74c3c', () => {
       dialog.remove();
       this.gameScene?.restart();
       this.inputManager.setEnabled(true);
@@ -228,7 +278,7 @@ export class Game {
     buttonContainer.appendChild(retryBtn);
 
     // Menu button
-    const menuBtn = this.createDialogButton('Menu', '#666', () => {
+    const menuBtn = this.createDialogButton('菜单', '#666', () => {
       dialog.remove();
       this.switchToScene(SceneType.MENU);
     });
@@ -243,6 +293,9 @@ export class Game {
 
     const overlay = document.getElementById('ui-overlay')!;
 
+    // Create fireworks canvas
+    this.createFireworks(overlay);
+
     const dialog = document.createElement('div');
     dialog.id = 'complete-dialog';
     dialog.style.cssText = `
@@ -256,10 +309,14 @@ export class Game {
       text-align: center;
       border: 2px solid #f1c40f;
       box-shadow: 0 0 30px rgba(241, 196, 15, 0.5);
+      z-index: 1000;
+      max-width: 90%;
+      width: 400px;
+      box-sizing: border-box;
     `;
 
     const title = document.createElement('h2');
-    title.textContent = 'Congratulations!';
+    title.textContent = '恭喜！';
     title.style.cssText = `
       color: #f1c40f;
       font-family: Arial, sans-serif;
@@ -269,7 +326,7 @@ export class Game {
     dialog.appendChild(title);
 
     const subtitle = document.createElement('p');
-    subtitle.textContent = 'You completed all levels!';
+    subtitle.textContent = '你已完成所有关卡！';
     subtitle.style.cssText = `
       color: #fff;
       font-family: Arial, sans-serif;
@@ -279,13 +336,109 @@ export class Game {
     dialog.appendChild(subtitle);
 
     // Menu button
-    const menuBtn = this.createDialogButton('Back to Menu', '#f1c40f', () => {
+    const menuBtn = this.createDialogButton('返回菜单', '#f1c40f', () => {
       dialog.remove();
+      this.removeFireworks();
       this.switchToScene(SceneType.MENU);
     });
     dialog.appendChild(menuBtn);
 
     overlay.appendChild(dialog);
+  }
+
+  private createFireworks(container: HTMLElement): void {
+    const canvas = document.createElement('canvas');
+    canvas.id = 'fireworks-canvas';
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    canvas.style.cssText = `
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 999;
+    `;
+    container.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d')!;
+    const particles: Array<{
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      life: number;
+      color: string;
+    }> = [];
+
+    const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffffff'];
+
+    const createFirework = (x: number, y: number) => {
+      const particleCount = 50;
+      for (let i = 0; i < particleCount; i++) {
+        const angle = (Math.PI * 2 * i) / particleCount;
+        const speed = 2 + Math.random() * 3;
+        particles.push({
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: 1,
+          color: colors[Math.floor(Math.random() * colors.length)],
+        });
+      }
+    };
+
+    let lastFirework = 0;
+    const animate = (time: number) => {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Create new firework every 500ms
+      if (time - lastFirework > 500) {
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height * 0.5;
+        createFirework(x, y);
+        lastFirework = time;
+      }
+
+      // Update and draw particles
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.1; // gravity
+        p.life -= 0.01;
+
+        if (p.life <= 0) {
+          particles.splice(i, 1);
+          continue;
+        }
+
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.life;
+        ctx.fillRect(p.x, p.y, 3, 3);
+      }
+
+      ctx.globalAlpha = 1;
+
+      const animId = requestAnimationFrame(animate);
+      (canvas as any).__animId = animId;
+    };
+
+    animate(0);
+  }
+
+  private removeFireworks(): void {
+    const canvas = document.getElementById('fireworks-canvas');
+    if (canvas) {
+      const animId = (canvas as any).__animId;
+      if (animId) {
+        cancelAnimationFrame(animId);
+      }
+      canvas.remove();
+    }
   }
 
   private createDialogButton(text: string, color: string, onClick: () => void): HTMLButtonElement {
@@ -302,6 +455,8 @@ export class Game {
       border-radius: 8px;
       cursor: pointer;
       transition: transform 0.1s, opacity 0.1s;
+      width: 100%;
+      min-width: 200px;
     `;
 
     btn.addEventListener('mouseenter', () => {

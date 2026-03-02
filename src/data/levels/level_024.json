@@ -241,31 +241,5 @@
       0
     ]
   ],
-  "solution": [
-    "left",
-    "up",
-    "right",
-    "up",
-    "right",
-    "down",
-    "right",
-    "right",
-    "down",
-    "right",
-    "down",
-    "down",
-    "down",
-    "left",
-    "up",
-    "right",
-    "right",
-    "up",
-    "right",
-    "up",
-    "right",
-    "down",
-    "left",
-    "left"
-  ],
   "minMoves": 24
 }

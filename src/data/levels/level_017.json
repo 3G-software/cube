@@ -185,27 +185,5 @@
       0
     ]
   ],
-  "solution": [
-    "left",
-    "up",
-    "right",
-    "up",
-    "right",
-    "right",
-    "up",
-    "right",
-    "up",
-    "up",
-    "up",
-    "right",
-    "down",
-    "left",
-    "up",
-    "right",
-    "right",
-    "down",
-    "down",
-    "down"
-  ],
   "minMoves": 20
 }

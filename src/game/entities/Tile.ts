@@ -1,11 +1,7 @@
 import {
   Scene,
   Mesh,
-  MeshBuilder,
   Vector3,
-  StandardMaterial,
-  Color3,
-  DynamicTexture,
 } from '@babylonjs/core';
 import { TileType, Position } from '../../utils/Types';
 import { TILE_SIZE } from '../../utils/Constants';
@@ -17,7 +13,6 @@ export abstract class Tile {
   protected _z: number;
   protected _type: TileType;
   protected _isActive: boolean = true;
-  protected coordLabel: Mesh | null = null;
 
   constructor(scene: Scene, x: number, z: number, type: TileType) {
     this.scene = scene;
@@ -26,47 +21,6 @@ export abstract class Tile {
     this._type = type;
     this.mesh = this.createMesh();
     this.updatePosition();
-    this.createCoordLabel();
-  }
-
-  protected createCoordLabel(): void {
-    // Create a plane to display coordinates
-    const plane = MeshBuilder.CreatePlane(
-      `coordLabel_${this._x}_${this._z}`,
-      { size: 0.7 },
-      this.scene
-    );
-
-    // Create dynamic texture for text
-    const texture = new DynamicTexture(
-      `coordTex_${this._x}_${this._z}`,
-      { width: 128, height: 64 },
-      this.scene,
-      false
-    );
-
-    const ctx = texture.getContext() as CanvasRenderingContext2D;
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    ctx.fillRect(0, 0, 128, 64);
-    ctx.font = 'bold 36px Arial';
-    ctx.fillStyle = 'yellow';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(`${this._x},${this._z}`, 64, 32);
-    texture.update();
-
-    const material = new StandardMaterial(`coordMat_${this._x}_${this._z}`, this.scene);
-    material.diffuseTexture = texture;
-    material.emissiveTexture = texture;
-    material.backFaceCulling = false;
-    material.disableLighting = true;
-
-    plane.material = material;
-    plane.rotation.x = Math.PI / 2; // Face up
-    plane.position.y = 0.1; // Slightly above tile
-    plane.parent = this.mesh;
-
-    this.coordLabel = plane;
   }
 
   protected abstract createMesh(): Mesh;
@@ -117,15 +71,6 @@ export abstract class Tile {
 
   // Dispose resources
   public dispose(): void {
-    if (this.coordLabel) {
-      if (this.coordLabel.material) {
-        const mat = this.coordLabel.material as StandardMaterial;
-        if (mat.diffuseTexture) mat.diffuseTexture.dispose();
-        mat.dispose();
-      }
-      this.coordLabel.dispose();
-      this.coordLabel = null;
-    }
     if (this.mesh.material) {
       this.mesh.material.dispose();
     }

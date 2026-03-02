@@ -64,7 +64,7 @@ export class MenuScene {
 
     // Subtitle
     const subtitle = document.createElement('p');
-    subtitle.textContent = 'Rolling Puzzle';
+    subtitle.textContent = '滚动方块';
     subtitle.style.cssText = `
       color: #888;
       font-family: Arial, sans-serif;
@@ -75,7 +75,7 @@ export class MenuScene {
     this.container.appendChild(subtitle);
 
     // Play button
-    const playBtn = this.createButton('PLAY', () => {
+    const playBtn = this.createButton('开始游戏', () => {
       if (this.onPlayCallback) {
         this.onPlayCallback();
       }
@@ -84,7 +84,7 @@ export class MenuScene {
     this.container.appendChild(playBtn);
 
     // Level select button
-    const levelSelectBtn = this.createButton('SELECT LEVEL', () => {
+    const levelSelectBtn = this.createButton('选择关卡', () => {
       if (this.onLevelSelectCallback) {
         this.onLevelSelectCallback();
       }

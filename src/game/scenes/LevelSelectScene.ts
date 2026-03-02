@@ -85,7 +85,7 @@ export class LevelSelectScene {
 
     // Title
     const title = document.createElement('h2');
-    title.textContent = 'Select Level';
+    title.textContent = '选择关卡';
     title.style.cssText = `
       color: white;
       font-family: Arial, sans-serif;

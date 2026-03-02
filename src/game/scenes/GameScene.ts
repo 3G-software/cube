@@ -68,7 +68,7 @@ export class GameScene {
     this.camera = new ArcRotateCamera(
       'camera',
       Math.PI / 4,           // Alpha (horizontal rotation)
-      Math.PI / 3,           // Beta (vertical angle)
+      Math.PI / 3.5,         // Beta (vertical angle) - slightly more tilted to see standing cube
       CAMERA_DISTANCE,       // Radius
       Vector3.Zero(),
       this.scene
@@ -81,8 +81,8 @@ export class GameScene {
     // Lock camera - no user interaction
     this.camera.lowerRadiusLimit = CAMERA_DISTANCE;
     this.camera.upperRadiusLimit = CAMERA_DISTANCE;
-    this.camera.lowerBetaLimit = Math.PI / 3;
-    this.camera.upperBetaLimit = Math.PI / 3;
+    this.camera.lowerBetaLimit = Math.PI / 3.5;
+    this.camera.upperBetaLimit = Math.PI / 3.5;
     this.camera.lowerAlphaLimit = Math.PI / 4;
     this.camera.upperAlphaLimit = Math.PI / 4;
 
@@ -174,26 +174,10 @@ export class GameScene {
       -webkit-user-select: none;
     `;
 
-    // Undo button
-    const undoBtn = document.createElement('button');
-    undoBtn.innerHTML = '↩';
-    undoBtn.title = 'Undo';
-    undoBtn.style.cssText = buttonStyle;
-    undoBtn.addEventListener('click', () => this.undo());
-    buttonContainer.appendChild(undoBtn);
-
-    // Restart button
-    const restartBtn = document.createElement('button');
-    restartBtn.innerHTML = '↻';
-    restartBtn.title = 'Restart';
-    restartBtn.style.cssText = buttonStyle;
-    restartBtn.addEventListener('click', () => this.restart());
-    buttonContainer.appendChild(restartBtn);
-
     // Menu button
     const menuBtn = document.createElement('button');
     menuBtn.innerHTML = '☰';
-    menuBtn.title = 'Menu';
+    menuBtn.title = '菜单';
     menuBtn.style.cssText = buttonStyle;
     menuBtn.addEventListener('click', () => {
       if (this.onMenuCallback) {
@@ -201,22 +185,6 @@ export class GameScene {
       }
     });
     buttonContainer.appendChild(menuBtn);
-
-    // Zoom in button (debug)
-    const zoomInBtn = document.createElement('button');
-    zoomInBtn.innerHTML = '+';
-    zoomInBtn.title = 'Zoom In';
-    zoomInBtn.style.cssText = buttonStyle;
-    zoomInBtn.addEventListener('click', () => this.adjustCameraDistance(-2));
-    buttonContainer.appendChild(zoomInBtn);
-
-    // Zoom out button (debug)
-    const zoomOutBtn = document.createElement('button');
-    zoomOutBtn.innerHTML = '-';
-    zoomOutBtn.title = 'Zoom Out';
-    zoomOutBtn.style.cssText = buttonStyle;
-    zoomOutBtn.addEventListener('click', () => this.adjustCameraDistance(2));
-    buttonContainer.appendChild(zoomOutBtn);
 
     overlay.appendChild(buttonContainer);
   }
@@ -331,16 +299,20 @@ export class GameScene {
     const centerX = (minX + maxX) / 2;
     const centerZ = (minZ + maxZ) / 2;
 
-    this.camera.target = new Vector3(centerX, 0, centerZ);
+    // Raise camera target slightly to account for standing cube height
+    // Standing cube is 2 units tall, so we offset Y by 0.5 to center better
+    this.camera.target = new Vector3(centerX, 0.5, centerZ);
 
     // Adjust camera distance based on actual tile area
     const actualWidth = maxX - minX + 1;
     const actualHeight = maxZ - minZ + 1;
     const maxDimension = Math.max(actualWidth, actualHeight);
-    const dynamicDistance = Math.max(CAMERA_DISTANCE, maxDimension * 2.5);
+    // Dynamic camera distance: ensure all tiles and standing cube are visible
+    // Increased multiplier and added extra padding for standing cube
+    const dynamicDistance = Math.max(18, Math.min(60, maxDimension * 2.5 + 5));
     this.camera.radius = dynamicDistance;
-    this.camera.lowerRadiusLimit = 5;  // Allow zoom in for debug
-    this.camera.upperRadiusLimit = 100; // Allow zoom out for debug
+    this.camera.lowerRadiusLimit = dynamicDistance;
+    this.camera.upperRadiusLimit = dynamicDistance;
   }
 
   private adjustCameraDistance(delta: number): void {
@@ -355,11 +327,11 @@ export class GameScene {
 
     if (this.levelNameDisplay && levelData) {
       const levelIndex = this.levelManager.getCurrentLevelIndex() + 1;
-      this.levelNameDisplay.textContent = `Level ${levelIndex}: ${levelData.name}`;
+      this.levelNameDisplay.textContent = `关卡 ${levelIndex}: ${levelData.name}`;
     }
 
     if (this.moveCountDisplay) {
-      this.moveCountDisplay.textContent = `Moves: ${this.moveCount}`;
+      this.moveCountDisplay.textContent = `步数: ${this.moveCount}`;
     }
   }
 

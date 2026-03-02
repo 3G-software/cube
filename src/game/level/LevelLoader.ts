@@ -97,7 +97,8 @@ export class LevelLoader {
       },
       goal: json.goal,
       tiles: json.tiles,
-      solution: json.solution as Direction[] | undefined,
+      // Don't load solution to prevent cheating
+      solution: undefined,
       minMoves: json.minMoves,
     };
   }
